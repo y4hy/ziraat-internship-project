@@ -73,7 +73,12 @@ namespace ziraat.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Customer", (string)null);
+                    b.ToTable("Customer", null, t =>
+                        {
+                            t.HasTrigger("trg_Customer_History");
+                        });
+
+                    b.HasAnnotation("SqlServer:UseSqlOutputClause", false);
                 });
 
             modelBuilder.Entity("ziraat.Api.Models.CustomerHistory", b =>

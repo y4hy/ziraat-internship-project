@@ -18,6 +18,12 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+await using (var scope = app.Services.CreateAsyncScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await DbInitializer.InitializeAsync(db);
+}
+
 app.UseCors();
 app.MapControllers();
 

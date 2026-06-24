@@ -12,7 +12,7 @@ using ziraat.Api.Data;
 namespace ziraat.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260623141714_Initial")]
+    [Migration("20260624072755_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -76,7 +76,12 @@ namespace ziraat.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Customer", (string)null);
+                    b.ToTable("Customer", null, t =>
+                        {
+                            t.HasTrigger("trg_Customer_History");
+                        });
+
+                    b.HasAnnotation("SqlServer:UseSqlOutputClause", false);
                 });
 
             modelBuilder.Entity("ziraat.Api.Models.CustomerHistory", b =>

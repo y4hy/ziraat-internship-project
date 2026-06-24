@@ -36,7 +36,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
         modelBuilder.Entity<Customer>(entity =>
         {
-            entity.ToTable("Customer");
+            // Declares the audit trigger (created in DbInitializer) so EF avoids the
+            // OUTPUT clause, which SQL Server forbids on trigger-bearing tables.
+            entity.ToTable("Customer", tb => tb.HasTrigger("trg_Customer_History"));
             entity.HasKey(e => e.Id);
 
             entity.Property(e => e.FirstName).HasMaxLength(150).IsRequired();
