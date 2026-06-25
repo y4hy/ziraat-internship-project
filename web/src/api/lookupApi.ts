@@ -1,8 +1,8 @@
 import type { Country, Province } from "../types/lookup";
-import { BASE_URL } from "./batch";
+import { authFetch, BASE_URL } from "./batch";
 
 async function getJson<T>(url: string): Promise<T> {
-    const res = await fetch(url);
+    const res = await authFetch(url);
     if (!res.ok) throw new Error("Failed to load lookup data.");
     return res.json();
 }
@@ -15,3 +15,6 @@ export const getPhoneTypes = () =>
 
 export const getCountryCodes = () =>
     getJson<Country[]>(`${BASE_URL}/api/lookups/country-codes`);
+
+export const getBranches = () =>
+    getJson<string[]>(`${BASE_URL}/api/lookups/branches`);

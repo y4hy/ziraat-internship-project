@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ziraat.Api.Data;
 using ziraat.Api.Models;
@@ -6,8 +7,9 @@ using ziraat.Api.Models;
 namespace ziraat.Api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/phones")]
-public partial class PhoneController(IPhoneRepository repository) : ControllerBase
+public partial class PhoneController(IPhoneRepository repository, ICustomerRepository customers) : ControllerBase
 {
     [GeneratedRegex(@"^\d{3}$")]
     private static partial Regex AreaCodeRegex();
@@ -27,6 +29,9 @@ public partial class PhoneController(IPhoneRepository repository) : ControllerBa
     {
         var errors = new Dictionary<string, string>();
 
+        var existingCustomerIds = await customers.GetExistingIdsAsync(
+            request.Rows.Where(r => r.RowStatus != "Deleted").Select(r => r.Data.CustomerId));
+
         for (int i = 0; i < request.Rows.Count; i++)
         {
             var row = request.Rows[i];
@@ -37,6 +42,8 @@ public partial class PhoneController(IPhoneRepository repository) : ControllerBa
 
             if (phone.CustomerId <= 0)
                 errors[key] = "Customer number is required.";
+            else if (!existingCustomerIds.Contains(phone.CustomerId))
+                errors[key] = $"Customer #{phone.CustomerId} does not exist.";
             else if (string.IsNullOrWhiteSpace(phone.PhoneType))
                 errors[key] = "Phone type is required.";
             else if (string.IsNullOrWhiteSpace(phone.CountryCode))

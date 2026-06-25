@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ziraat.Api.Data;
 using ziraat.Api.Models;
@@ -5,8 +6,9 @@ using ziraat.Api.Models;
 namespace ziraat.Api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/addresses")]
-public class AddressController(IAddressRepository repository) : ControllerBase
+public class AddressController(IAddressRepository repository, ICustomerRepository customers) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetAll()
@@ -20,6 +22,9 @@ public class AddressController(IAddressRepository repository) : ControllerBase
     {
         var errors = new Dictionary<string, string>();
 
+        var existingCustomerIds = await customers.GetExistingIdsAsync(
+            request.Rows.Where(r => r.RowStatus != "Deleted").Select(r => r.Data.CustomerId));
+
         for (int i = 0; i < request.Rows.Count; i++)
         {
             var row = request.Rows[i];
@@ -30,6 +35,8 @@ public class AddressController(IAddressRepository repository) : ControllerBase
 
             if (address.CustomerId <= 0)
                 errors[key] = "Customer number is required.";
+            else if (!existingCustomerIds.Contains(address.CustomerId))
+                errors[key] = $"Customer #{address.CustomerId} does not exist.";
             else if (string.IsNullOrWhiteSpace(address.Province))
                 errors[key] = "Province is required.";
             else if (string.IsNullOrWhiteSpace(address.District))

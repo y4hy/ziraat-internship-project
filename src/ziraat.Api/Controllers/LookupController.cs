@@ -1,15 +1,18 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ziraat.Api.Data;
 
 namespace ziraat.Api.Controllers;
 
 /// <summary>
-/// Serves the static reference data used by the Address and Phone tab combo boxes.
-/// Kept in-memory here so the lists are sourced from the backend without needing
-/// dedicated lookup tables/migrations.
+/// Serves the reference data used by the combo boxes. Province/phone/country lists
+/// are kept in-memory; branches are derived from the distinct values already stored
+/// on customers so the Account Operations filters stay consistent with real data.
 /// </summary>
 [ApiController]
+[Authorize]
 [Route("api/lookups")]
-public class LookupController : ControllerBase
+public class LookupController(ICustomerRepository customers) : ControllerBase
 {
     public record Province(string Name, string[] Districts);
     public record Country(string Code, string Name);
@@ -44,4 +47,7 @@ public class LookupController : ControllerBase
 
     [HttpGet("country-codes")]
     public IActionResult GetCountryCodes() => Ok(CountryCodes);
+
+    [HttpGet("branches")]
+    public async Task<IActionResult> GetBranches() => Ok(await customers.GetDistinctBranchesAsync());
 }

@@ -8,6 +8,29 @@ public class CustomerRepository(AppDbContext db) : ICustomerRepository
     public Task<List<Customer>> GetAllAsync() =>
         db.Customers.OrderBy(c => c.Id).ToListAsync();
 
+    public Task<List<Customer>> GetByBranchAsync(string branch) =>
+        db.Customers.Where(c => c.BankBranch == branch).OrderBy(c => c.Id).ToListAsync();
+
+    public async Task<HashSet<int>> GetExistingIdsAsync(IEnumerable<int> ids)
+    {
+        var distinct = ids.Where(id => id > 0).Distinct().ToList();
+        if (distinct.Count == 0) return new HashSet<int>();
+
+        var found = await db.Customers
+            .Where(c => distinct.Contains(c.Id))
+            .Select(c => c.Id)
+            .ToListAsync();
+        return found.ToHashSet();
+    }
+
+    public Task<List<string>> GetDistinctBranchesAsync() =>
+        db.Customers
+            .Where(c => c.BankBranch != null && c.BankBranch != "")
+            .Select(c => c.BankBranch)
+            .Distinct()
+            .OrderBy(b => b)
+            .ToListAsync();
+
     public async Task<int> InsertAsync(Customer customer)
     {
         db.Customers.Add(customer);

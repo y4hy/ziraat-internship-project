@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ziraat.Api.Data;
 using ziraat.Api.Models;
@@ -6,13 +7,16 @@ using ziraat.Api.Validation;
 namespace ziraat.Api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/customers")]
 public class CustomerController(ICustomerRepository repository) : ControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll([FromQuery] string? branch)
     {
-        var customers = await repository.GetAllAsync();
+        var customers = string.IsNullOrWhiteSpace(branch)
+            ? await repository.GetAllAsync()
+            : await repository.GetByBranchAsync(branch);
         return Ok(customers);
     }
 

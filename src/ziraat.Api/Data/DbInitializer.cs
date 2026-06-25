@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using ziraat.Api.Models;
 
 namespace ziraat.Api.Data;
 
@@ -10,10 +12,25 @@ namespace ziraat.Api.Data;
 /// </summary>
 public static class DbInitializer
 {
-    public static async Task InitializeAsync(AppDbContext db)
+    // Default credentials seeded for Phase 3 login. Username: admin / Password: admin123
+    private const string DefaultUsername = "admin";
+    private const string DefaultPassword = "admin123";
+
+    public static async Task InitializeAsync(AppDbContext db, IPasswordHasher<User> passwordHasher)
     {
         await db.Database.MigrateAsync();
         await db.Database.ExecuteSqlRawAsync(CustomerHistoryTrigger);
+        await SeedDefaultUserAsync(db, passwordHasher);
+    }
+
+    private static async Task SeedDefaultUserAsync(AppDbContext db, IPasswordHasher<User> passwordHasher)
+    {
+        if (await db.Users.AnyAsync()) return;
+
+        var user = new User { Username = DefaultUsername };
+        user.PasswordHash = passwordHasher.HashPassword(user, DefaultPassword);
+        db.Users.Add(user);
+        await db.SaveChangesAsync();
     }
 
     private const string CustomerHistoryTrigger = """

@@ -1,7 +1,7 @@
 export type TabKey = "operations" | "address" | "phone";
 
 const TABS: { key: TabKey; label: string }[] = [
-    { key: "operations", label: "Customer Operations" },
+    { key: "operations", label: "Customer Transactions" },
     { key: "address", label: "Customer Address" },
     { key: "phone", label: "Customer Phone" },
 ];

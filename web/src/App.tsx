@@ -1,21 +1,32 @@
-import { useState } from "react";
-import { Tabs, type TabKey } from "./components/Tabs";
-import { CustomerOperationsTab } from "./components/CustomerOperationsTab";
-import { AddressTab } from "./components/AddressTab";
-import { PhoneTab } from "./components/PhoneTab";
+import { useEffect, useState } from "react";
+import { clearToken, getToken, subscribe } from "./api/authStore";
+import { LoginScreen } from "./components/LoginScreen";
+import { Menu, type FormKey } from "./components/Menu";
+import { CustomerOperationsForm } from "./components/CustomerOperationsForm";
+import { AccountOperationsForm } from "./components/AccountOperationsForm";
 import "./App.css";
 
 function App() {
-    const [active, setActive] = useState<TabKey>("operations");
+    const [token, setTokenState] = useState<string | null>(getToken());
+    const [activeForm, setActiveForm] = useState<FormKey>("customer");
+
+    // Keep React in sync with the token store (login, logout, and 401-triggered logout).
+    useEffect(() => subscribe(() => setTokenState(getToken())), []);
+
+    if (!token) {
+        return <LoginScreen />;
+    }
 
     return (
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "24px 16px", fontFamily: "sans-serif" }}>
-            <h1 style={{ marginTop: 0 }}>Customer Registration</h1>
-            <Tabs active={active} onChange={setActive} />
-            {/* Tabs stay mounted so each one keeps its unsaved rows when switching. */}
-            <div hidden={active !== "operations"}><CustomerOperationsTab /></div>
-            <div hidden={active !== "address"}><AddressTab /></div>
-            <div hidden={active !== "phone"}><PhoneTab /></div>
+        <div style={{ width: "100%", padding: "24px 32px", boxSizing: "border-box", fontFamily: "sans-serif" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 16 }}>
+                <Menu active={activeForm} onSelect={setActiveForm} onLogout={clearToken} />
+                <h1 style={{ margin: 0, fontSize: 22 }}>
+                    {activeForm === "customer" ? "Customer Operations" : "Account Operations"}
+                </h1>
+            </div>
+
+            {activeForm === "customer" ? <CustomerOperationsForm /> : <AccountOperationsForm />}
         </div>
     );
 }

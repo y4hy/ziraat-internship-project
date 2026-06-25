@@ -34,5 +34,8 @@ function mapApiToRow(c: ApiCustomer): CustomerRow {
 export const getAllCustomers = () =>
     getList(`${BASE_URL}/api/customers`, mapApiToRow);
 
+export const getCustomersByBranch = (branch: string) =>
+    getList(`${BASE_URL}/api/customers?branch=${encodeURIComponent(branch)}`, mapApiToRow);
+
 export const saveCustomerBatch = (rows: CustomerRow[]) =>
     postBatch(`${BASE_URL}/api/customers/batch`, rows, mapApiToRow);
