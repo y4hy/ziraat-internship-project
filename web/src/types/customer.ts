@@ -1,4 +1,6 @@
-export type RowStatus = "Added" | "Modified" | "Deleted" | "Unchanged";
+import type { Row } from "./row";
+
+export type { RowStatus } from "./row";
 
 export interface CustomerData {
     firstName: string;
@@ -11,8 +13,4 @@ export interface CustomerData {
     bankBranch: string;
 }
 
-export interface CustomerRow {
-    id: number | null;
-    status: RowStatus;
-    data: CustomerData;
-}
+export type CustomerRow = Row<CustomerData>;

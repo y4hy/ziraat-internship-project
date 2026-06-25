@@ -33,6 +33,23 @@ namespace ziraat.Api.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Customer_Address",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CustomerId = table.Column<int>(type: "int", nullable: false),
+                    Province = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    District = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    OpenAddress = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETDATE()")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Customer_Address", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Customer_History",
                 columns: table => new
                 {
@@ -55,6 +72,24 @@ namespace ziraat.Api.Migrations
                 {
                     table.PrimaryKey("PK_Customer_History", x => x.HistoryId);
                 });
+
+            migrationBuilder.CreateTable(
+                name: "Customer_Phone",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CustomerId = table.Column<int>(type: "int", nullable: false),
+                    PhoneType = table.Column<string>(type: "varchar(20)", unicode: false, maxLength: 20, nullable: false),
+                    CountryCode = table.Column<string>(type: "varchar(5)", unicode: false, maxLength: 5, nullable: false),
+                    AreaCode = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
+                    PhoneNumber = table.Column<string>(type: "varchar(7)", unicode: false, maxLength: 7, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETDATE()")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Customer_Phone", x => x.Id);
+                });
         }
 
         /// <inheritdoc />
@@ -64,7 +99,13 @@ namespace ziraat.Api.Migrations
                 name: "Customer");
 
             migrationBuilder.DropTable(
+                name: "Customer_Address");
+
+            migrationBuilder.DropTable(
                 name: "Customer_History");
+
+            migrationBuilder.DropTable(
+                name: "Customer_Phone");
         }
     }
 }

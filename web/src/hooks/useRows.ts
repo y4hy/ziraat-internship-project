@@ -1,22 +1,28 @@
 import { useState, useCallback } from "react";
-import type { CustomerRow, CustomerData } from "../types/customer";
-import { getAllCustomers, saveBatch } from "../api/customerApi";
+import type { Row } from "../types/row";
 
-export function useCustomerRows() {
-    const [rows, setRows] = useState<CustomerRow[]>([]);
+/**
+ * Generic grid-row state shared by every tab: tracks Added/Modified/Deleted/Unchanged
+ * status locally and flushes the batch through the supplied API on save.
+ * `getAll` and `saveBatch` must be stable references (module-level functions).
+ */
+export function useRows<TData>(
+    getAll: () => Promise<Row<TData>[]>,
+    saveBatch: (rows: Row<TData>[]) => Promise<Row<TData>[]>,
+) {
+    const [rows, setRows] = useState<Row<TData>[]>([]);
     const [saving, setSaving] = useState(false);
     const [saveError, setSaveError] = useState<string | null>(null);
 
     const loadInitial = useCallback(async () => {
-        const data = await getAllCustomers();
-        setRows(data);
-    }, []);
+        setRows(await getAll());
+    }, [getAll]);
 
-    const addRow = useCallback((data: CustomerData) => {
+    const addRow = useCallback((data: TData) => {
         setRows((prev) => [...prev, { id: null, status: "Added", data }]);
     }, []);
 
-    const updateRow = useCallback((index: number, data: CustomerData) => {
+    const updateRow = useCallback((index: number, data: TData) => {
         setRows((prev) =>
             prev.map((row, i) => {
                 if (i !== index) return row;
@@ -50,7 +56,7 @@ export function useCustomerRows() {
         } finally {
             setSaving(false);
         }
-    }, [rows]);
+    }, [rows, saveBatch]);
 
     return { rows, saving, saveError, loadInitial, addRow, updateRow, deleteRow, save };
 }

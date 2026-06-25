@@ -8,6 +8,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 {
     public DbSet<Customer> Customers => Set<Customer>();
     public DbSet<CustomerHistory> CustomerHistories => Set<CustomerHistory>();
+    public DbSet<CustomerAddress> CustomerAddresses => Set<CustomerAddress>();
+    public DbSet<CustomerPhone> CustomerPhones => Set<CustomerPhone>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -55,6 +57,35 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.Property(e => e.CustomerType).HasColumnType("tinyint");
             entity.Property(e => e.Nationality).HasColumnType("tinyint");
             entity.Property(e => e.BankBranch).HasMaxLength(150);
+
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("GETDATE()")
+                .ValueGeneratedOnAdd();
+        });
+
+        modelBuilder.Entity<CustomerAddress>(entity =>
+        {
+            entity.ToTable("Customer_Address");
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.Province).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.District).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.OpenAddress).HasMaxLength(500).IsRequired();
+
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("GETDATE()")
+                .ValueGeneratedOnAdd();
+        });
+
+        modelBuilder.Entity<CustomerPhone>(entity =>
+        {
+            entity.ToTable("Customer_Phone");
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.PhoneType).HasMaxLength(20).IsUnicode(false).IsRequired();
+            entity.Property(e => e.CountryCode).HasMaxLength(5).IsUnicode(false).IsRequired();
+            entity.Property(e => e.AreaCode).HasMaxLength(3).IsUnicode(false).IsRequired();
+            entity.Property(e => e.PhoneNumber).HasMaxLength(7).IsUnicode(false).IsRequired();
 
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("GETDATE()")
