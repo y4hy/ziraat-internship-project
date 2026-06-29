@@ -33,6 +33,7 @@ export function LoginScreen() {
                     <input
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
+                        maxLength={100}
                         autoFocus
                         required
                         style={inputStyle}

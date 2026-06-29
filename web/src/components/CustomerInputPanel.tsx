@@ -26,6 +26,8 @@ function isValidNationalId(number: string): boolean {
     return true;
 }
 
+const onlyDigits = (value: string, max: number) => value.replace(/\D/g, "").slice(0, max);
+
 function validateForm(data: CustomerData): string | null {
     if (!data.firstName.trim()) return "First name is required.";
     if (data.firstName.length > 150) return "First name exceeds 150 characters.";
@@ -78,7 +80,7 @@ export function CustomerInputPanel({ onAdd }: Props) {
                 </label>
                 <label>
                     National / Tax Number
-                    <input value={form.nationalNumber} onChange={(e) => set("nationalNumber", e.target.value)} required />
+                    <input inputMode="numeric" maxLength={11} value={form.nationalNumber} onChange={(e) => set("nationalNumber", onlyDigits(e.target.value, 11))} placeholder="11 digits (8–10 for tax)" required />
                 </label>
                 <label>
                     Gender
@@ -107,7 +109,7 @@ export function CustomerInputPanel({ onAdd }: Props) {
                 </label>
                 <label>
                     Bank Branch
-                    <input value={form.bankBranch} onChange={(e) => set("bankBranch", e.target.value)} required />
+                    <input maxLength={150} value={form.bankBranch} onChange={(e) => set("bankBranch", e.target.value)} required />
                 </label>
             </div>
             {error && <p style={{ color: "red", marginTop: 8 }}>{error}</p>}
