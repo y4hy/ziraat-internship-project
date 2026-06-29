@@ -12,7 +12,6 @@ public class UserRepository(AppDbContext db) : IUserRepository
     /// </summary>
     public Task<User?> FindByUsernameAsync(string username) =>
         db.Users
-            .FromSqlRaw("SELECT * FROM Users WHERE Username = {0}", username)
             .AsNoTracking()
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(u => u.Username == username);
 }
