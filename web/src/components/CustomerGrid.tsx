@@ -1,5 +1,7 @@
 import { useState } from "react";
 import type { CustomerRow, CustomerData } from "../types/customer";
+import { usePagination } from "../hooks/usePagination";
+import { Pagination } from "./Pagination";
 
 interface Props {
     rows: CustomerRow[];
@@ -16,6 +18,7 @@ const NAT_LABEL: Record<number, string> = { 1: "Citizen", 2: "Foreign national" 
 export function CustomerGrid({ rows, onUpdate, onDelete }: Props) {
     const [editingIndex, setEditingIndex] = useState<number | null>(null);
     const [editForm, setEditForm] = useState<CustomerData | null>(null);
+    const { page, setPage, totalPages, pageItems, startIndex } = usePagination(rows);
 
     function startEdit(index: number) {
         setEditingIndex(index);
@@ -56,7 +59,8 @@ export function CustomerGrid({ rows, onUpdate, onDelete }: Props) {
                     </tr>
                 </thead>
                 <tbody>
-                    {rows.map((row, i) => {
+                    {pageItems.map((row, li) => {
+                        const i = startIndex + li;
                         const isDeleted = row.status === "Deleted";
                         const isEditing = editingIndex === i;
                         const rowStyle: React.CSSProperties = {
@@ -131,6 +135,9 @@ export function CustomerGrid({ rows, onUpdate, onDelete }: Props) {
                     )}
                 </tbody>
             </table>
+            {rows.length > 0 && (
+                <Pagination page={page} totalPages={totalPages} totalItems={rows.length} onPage={setPage} />
+            )}
         </div>
     );
 }

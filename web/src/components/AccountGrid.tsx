@@ -9,6 +9,8 @@ import {
     ACCOUNT_TYPE_LABEL,
     CURRENCY_LABEL,
 } from "../types/account";
+import { usePagination } from "../hooks/usePagination";
+import { Pagination } from "./Pagination";
 
 interface Props {
     rows: AccountRow[];
@@ -19,6 +21,7 @@ interface Props {
 export function AccountGrid({ rows, onUpdate, onDelete }: Props) {
     const [editingIndex, setEditingIndex] = useState<number | null>(null);
     const [editForm, setEditForm] = useState<AccountData | null>(null);
+    const { page, setPage, totalPages, pageItems, startIndex } = usePagination(rows);
 
     function startEdit(index: number) {
         setEditingIndex(index);
@@ -56,7 +59,8 @@ export function AccountGrid({ rows, onUpdate, onDelete }: Props) {
                     </tr>
                 </thead>
                 <tbody>
-                    {rows.map((row, i) => {
+                    {pageItems.map((row, li) => {
+                        const i = startIndex + li;
                         const isDeleted = row.status === "Deleted";
                         const isEditing = editingIndex === i;
                         const rowStyle: React.CSSProperties = {
@@ -123,6 +127,9 @@ export function AccountGrid({ rows, onUpdate, onDelete }: Props) {
                     )}
                 </tbody>
             </table>
+            {rows.length > 0 && (
+                <Pagination page={page} totalPages={totalPages} totalItems={rows.length} onPage={setPage} />
+            )}
         </div>
     );
 }

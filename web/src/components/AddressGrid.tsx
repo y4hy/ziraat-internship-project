@@ -1,6 +1,8 @@
 import { useState } from "react";
 import type { AddressRow, AddressData } from "../types/address";
 import type { Province } from "../types/lookup";
+import { usePagination } from "../hooks/usePagination";
+import { Pagination } from "./Pagination";
 
 interface Props {
     rows: AddressRow[];
@@ -12,6 +14,7 @@ interface Props {
 export function AddressGrid({ rows, provinces, onUpdate, onDelete }: Props) {
     const [editingIndex, setEditingIndex] = useState<number | null>(null);
     const [editForm, setEditForm] = useState<AddressData | null>(null);
+    const { page, setPage, totalPages, pageItems, startIndex } = usePagination(rows);
 
     const editDistricts = provinces.find((p) => p.name === editForm?.province)?.districts ?? [];
 
@@ -50,7 +53,8 @@ export function AddressGrid({ rows, provinces, onUpdate, onDelete }: Props) {
                     </tr>
                 </thead>
                 <tbody>
-                    {rows.map((row, i) => {
+                    {pageItems.map((row, li) => {
+                        const i = startIndex + li;
                         const isDeleted = row.status === "Deleted";
                         const isEditing = editingIndex === i;
                         const rowStyle: React.CSSProperties = {
@@ -112,6 +116,9 @@ export function AddressGrid({ rows, provinces, onUpdate, onDelete }: Props) {
                     )}
                 </tbody>
             </table>
+            {rows.length > 0 && (
+                <Pagination page={page} totalPages={totalPages} totalItems={rows.length} onPage={setPage} />
+            )}
         </div>
     );
 }

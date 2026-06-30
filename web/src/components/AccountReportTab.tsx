@@ -9,6 +9,8 @@ import {
     ACCOUNT_TYPE_LABEL,
     CURRENCY_LABEL,
 } from "../types/account";
+import { usePagination } from "../hooks/usePagination";
+import { Pagination } from "./Pagination";
 
 export function AccountReportTab() {
     const [branches, setBranches] = useState<string[]>([]);
@@ -46,6 +48,7 @@ export function AccountReportTab() {
     }
 
     const grandTotal = report?.reduce((sum, r) => sum + r.totalBalance, 0) ?? 0;
+    const { page, setPage, totalPages, pageItems, startIndex } = usePagination(report ?? []);
 
     return (
         <>
@@ -105,8 +108,8 @@ export function AccountReportTab() {
                             </tr>
                         </thead>
                         <tbody>
-                            {report.map((r, i) => (
-                                <tr key={i}>
+                            {pageItems.map((r, li) => (
+                                <tr key={startIndex + li}>
                                     <td style={td}>{ACCOUNT_TYPE_LABEL[r.accountType]}</td>
                                     <td style={td}>{CURRENCY_LABEL[r.currency]}</td>
                                     <td style={td}>{r.isActive ? "Yes" : "No"}</td>
@@ -127,6 +130,9 @@ export function AccountReportTab() {
                             </tfoot>
                         )}
                     </table>
+                    {report.length > 0 && (
+                        <Pagination page={page} totalPages={totalPages} totalItems={report.length} onPage={setPage} />
+                    )}
                 </div>
             )}
         </>

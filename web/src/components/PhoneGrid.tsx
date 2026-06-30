@@ -1,6 +1,8 @@
 import { useState } from "react";
 import type { PhoneRow, PhoneData } from "../types/phone";
 import type { Country } from "../types/lookup";
+import { usePagination } from "../hooks/usePagination";
+import { Pagination } from "./Pagination";
 
 interface Props {
     rows: PhoneRow[];
@@ -15,6 +17,7 @@ const onlyDigits = (value: string, max: number) => value.replace(/\D/g, "").slic
 export function PhoneGrid({ rows, phoneTypes, countryCodes, onUpdate, onDelete }: Props) {
     const [editingIndex, setEditingIndex] = useState<number | null>(null);
     const [editForm, setEditForm] = useState<PhoneData | null>(null);
+    const { page, setPage, totalPages, pageItems, startIndex } = usePagination(rows);
 
     const countryLabel = (code: string) => {
         const c = countryCodes.find((x) => x.code === code);
@@ -57,7 +60,8 @@ export function PhoneGrid({ rows, phoneTypes, countryCodes, onUpdate, onDelete }
                     </tr>
                 </thead>
                 <tbody>
-                    {rows.map((row, i) => {
+                    {pageItems.map((row, li) => {
+                        const i = startIndex + li;
                         const isDeleted = row.status === "Deleted";
                         const isEditing = editingIndex === i;
                         const rowStyle: React.CSSProperties = {
@@ -121,6 +125,9 @@ export function PhoneGrid({ rows, phoneTypes, countryCodes, onUpdate, onDelete }
                     )}
                 </tbody>
             </table>
+            {rows.length > 0 && (
+                <Pagination page={page} totalPages={totalPages} totalItems={rows.length} onPage={setPage} />
+            )}
         </div>
     );
 }

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { CustomerData } from "../types/customer";
+import { BranchSearchModal } from "./BranchSearchModal";
 
 interface Props {
     onAdd: (data: CustomerData) => void;
@@ -52,6 +53,7 @@ function validateForm(data: CustomerData): string | null {
 export function CustomerInputPanel({ onAdd }: Props) {
     const [form, setForm] = useState<CustomerData>(empty);
     const [error, setError] = useState<string | null>(null);
+    const [branchSearchOpen, setBranchSearchOpen] = useState(false);
 
     function set<K extends keyof CustomerData>(key: K, value: CustomerData[K]) {
         setForm((prev) => ({ ...prev, [key]: value }));
@@ -109,11 +111,28 @@ export function CustomerInputPanel({ onAdd }: Props) {
                 </label>
                 <label>
                     Bank Branch
-                    <input maxLength={150} value={form.bankBranch} onChange={(e) => set("bankBranch", e.target.value)} required />
+                    <span style={{ display: "flex", gap: 6 }}>
+                        <input
+                            value={form.bankBranch}
+                            readOnly
+                            required
+                            placeholder="Select…"
+                            onClick={() => setBranchSearchOpen(true)}
+                            style={{ flex: 1, cursor: "pointer", background: "#fff" }}
+                        />
+                        <button type="button" onClick={() => setBranchSearchOpen(true)} aria-label="Search branch">🔍</button>
+                    </span>
                 </label>
             </div>
             {error && <p style={{ color: "red", marginTop: 8 }}>{error}</p>}
             <button type="submit" style={{ marginTop: 12 }}>Add to Grid</button>
+
+            {branchSearchOpen && (
+                <BranchSearchModal
+                    onClose={() => setBranchSearchOpen(false)}
+                    onSelect={(branch) => { set("bankBranch", branch); setBranchSearchOpen(false); }}
+                />
+            )}
         </form>
     );
 }
