@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { CustomerRow, CustomerData } from "../types/customer";
 import { usePagination } from "../hooks/usePagination";
 import { Pagination } from "./Pagination";
+import { BranchSearchModal } from "./BranchSearchModal";
 
 interface Props {
     rows: CustomerRow[];
@@ -18,6 +19,7 @@ const NAT_LABEL: Record<number, string> = { 1: "Citizen", 2: "Foreign national" 
 export function CustomerGrid({ rows, onUpdate, onDelete }: Props) {
     const [editingIndex, setEditingIndex] = useState<number | null>(null);
     const [editForm, setEditForm] = useState<CustomerData | null>(null);
+    const [branchSearchOpen, setBranchSearchOpen] = useState(false);
     const { page, setPage, totalPages, pageItems, startIndex } = usePagination(rows);
 
     function startEdit(index: number) {
@@ -96,7 +98,12 @@ export function CustomerGrid({ rows, onUpdate, onDelete }: Props) {
                                         </select>
                                     </td>
                                     <td style={td}><input type="number" min={0} max={150} value={editForm.age} onChange={(e) => set("age", Number(e.target.value))} style={{ width: 60 }} /></td>
-                                    <td style={td}><input maxLength={150} value={editForm.bankBranch} onChange={(e) => set("bankBranch", e.target.value)} style={{ width: "100%" }} /></td>
+                                    <td style={td}>
+                                        <span style={{ display: "flex", gap: 4 }}>
+                                            <input value={editForm.bankBranch} readOnly placeholder="Select…" onClick={() => setBranchSearchOpen(true)} style={{ width: "100%", cursor: "pointer", background: "#fff" }} />
+                                            <button type="button" onClick={() => setBranchSearchOpen(true)} aria-label="Search branch">🔍</button>
+                                        </span>
+                                    </td>
                                     <td style={td}>
                                         <button onClick={() => commitEdit(i)} style={{ marginRight: 4 }}>Save</button>
                                         <button onClick={cancelEdit}>Cancel</button>
@@ -137,6 +144,12 @@ export function CustomerGrid({ rows, onUpdate, onDelete }: Props) {
             </table>
             {rows.length > 0 && (
                 <Pagination page={page} totalPages={totalPages} totalItems={rows.length} onPage={setPage} />
+            )}
+            {branchSearchOpen && (
+                <BranchSearchModal
+                    onClose={() => setBranchSearchOpen(false)}
+                    onSelect={(branch) => { set("bankBranch", branch); setBranchSearchOpen(false); }}
+                />
             )}
         </div>
     );
