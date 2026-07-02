@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ziraat.Api.Data;
@@ -9,8 +10,14 @@ namespace ziraat.Api.Controllers;
 [ApiController]
 [Authorize]
 [Route("api/customers")]
-public class CustomerController(ICustomerRepository repository) : ControllerBase
+public partial class CustomerController(ICustomerRepository repository) : ControllerBase
 {
+    [GeneratedRegex(@"^\d{3}$")]
+    private static partial Regex AreaCodeRegex();
+
+    [GeneratedRegex(@"^\d{7}$")]
+    private static partial Regex PhoneNumberRegex();
+
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] string? branch)
     {
@@ -57,6 +64,21 @@ public class CustomerController(ICustomerRepository repository) : ControllerBase
                 errors[key] = "First name exceeds 150 characters.";
             if (customer.LastName?.Length > 100)
                 errors[key] = "Last name exceeds 100 characters.";
+
+            if (string.IsNullOrWhiteSpace(customer.Province))
+                errors[key] = "Province is required.";
+            else if (string.IsNullOrWhiteSpace(customer.District))
+                errors[key] = "District is required.";
+            else if (string.IsNullOrWhiteSpace(customer.OpenAddress))
+                errors[key] = "Open address is required.";
+            else if (string.IsNullOrWhiteSpace(customer.PhoneType))
+                errors[key] = "Phone type is required.";
+            else if (string.IsNullOrWhiteSpace(customer.CountryCode))
+                errors[key] = "Country code is required.";
+            else if (!AreaCodeRegex().IsMatch(customer.AreaCode ?? string.Empty))
+                errors[key] = "Area code must be 3 digits.";
+            else if (!PhoneNumberRegex().IsMatch(customer.PhoneNumber ?? string.Empty))
+                errors[key] = "Phone number must be 7 digits.";
         }
 
         if (errors.Count > 0)

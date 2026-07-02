@@ -1,11 +1,15 @@
 import { useState } from "react";
 import type { CustomerRow, CustomerData } from "../types/customer";
+import type { Country, Province } from "../types/lookup";
 import { usePagination } from "../hooks/usePagination";
 import { Pagination } from "./Pagination";
 import { BranchSearchModal } from "./BranchSearchModal";
 
 interface Props {
     rows: CustomerRow[];
+    provinces: Province[];
+    phoneTypes: string[];
+    countryCodes: Country[];
     onUpdate: (index: number, data: CustomerData) => void;
     onDelete: (index: number) => void;
 }
@@ -16,11 +20,18 @@ const GENDER_LABEL: Record<string, string> = { M: "Male", F: "Female" };
 const TYPE_LABEL: Record<number, string> = { 1: "Individual", 2: "Corporate" };
 const NAT_LABEL: Record<number, string> = { 1: "Citizen", 2: "Foreign national" };
 
-export function CustomerGrid({ rows, onUpdate, onDelete }: Props) {
+export function CustomerGrid({ rows, provinces, phoneTypes, countryCodes, onUpdate, onDelete }: Props) {
     const [editingIndex, setEditingIndex] = useState<number | null>(null);
     const [editForm, setEditForm] = useState<CustomerData | null>(null);
     const [branchSearchOpen, setBranchSearchOpen] = useState(false);
     const { page, setPage, totalPages, pageItems, startIndex } = usePagination(rows);
+
+    const editDistricts = provinces.find((p) => p.name === editForm?.province)?.districts ?? [];
+
+    const countryLabel = (code: string) => {
+        const c = countryCodes.find((x) => x.code === code);
+        return c ? `${c.code} – ${c.name}` : code;
+    };
 
     function startEdit(index: number) {
         setEditingIndex(index);
@@ -57,6 +68,13 @@ export function CustomerGrid({ rows, onUpdate, onDelete }: Props) {
                         <th style={th}>Nationality</th>
                         <th style={th}>Age</th>
                         <th style={th}>Branch</th>
+                        <th style={th}>Province</th>
+                        <th style={th}>District</th>
+                        <th style={th}>Open Address</th>
+                        <th style={th}>Phone Type</th>
+                        <th style={th}>Country Code</th>
+                        <th style={th}>Area Code</th>
+                        <th style={th}>Phone Number</th>
                         <th style={th}>Actions</th>
                     </tr>
                 </thead>
@@ -105,6 +123,33 @@ export function CustomerGrid({ rows, onUpdate, onDelete }: Props) {
                                         </span>
                                     </td>
                                     <td style={td}>
+                                        <select value={editForm.province} onChange={(e) => setEditForm((prev) => prev ? { ...prev, province: e.target.value, district: "" } : prev)}>
+                                            <option value="">Select…</option>
+                                            {provinces.map((p) => <option key={p.name} value={p.name}>{p.name}</option>)}
+                                        </select>
+                                    </td>
+                                    <td style={td}>
+                                        <select value={editForm.district} onChange={(e) => set("district", e.target.value)} disabled={!editForm.province}>
+                                            <option value="">Select…</option>
+                                            {editDistricts.map((d) => <option key={d} value={d}>{d}</option>)}
+                                        </select>
+                                    </td>
+                                    <td style={td}><input value={editForm.openAddress} maxLength={500} onChange={(e) => set("openAddress", e.target.value)} style={{ width: "100%" }} /></td>
+                                    <td style={td}>
+                                        <select value={editForm.phoneType} onChange={(e) => set("phoneType", e.target.value)}>
+                                            <option value="">Select…</option>
+                                            {phoneTypes.map((t) => <option key={t} value={t}>{t}</option>)}
+                                        </select>
+                                    </td>
+                                    <td style={td}>
+                                        <select value={editForm.countryCode} onChange={(e) => set("countryCode", e.target.value)}>
+                                            <option value="">Select…</option>
+                                            {countryCodes.map((c) => <option key={c.code} value={c.code}>{c.code} – {c.name}</option>)}
+                                        </select>
+                                    </td>
+                                    <td style={td}><input inputMode="numeric" value={editForm.areaCode} onChange={(e) => set("areaCode", onlyDigits(e.target.value, 3))} style={{ width: 60 }} /></td>
+                                    <td style={td}><input inputMode="numeric" value={editForm.phoneNumber} onChange={(e) => set("phoneNumber", onlyDigits(e.target.value, 7))} style={{ width: 90 }} /></td>
+                                    <td style={td}>
                                         <button onClick={() => commitEdit(i)} style={{ marginRight: 4 }}>Save</button>
                                         <button onClick={cancelEdit}>Cancel</button>
                                     </td>
@@ -124,6 +169,13 @@ export function CustomerGrid({ rows, onUpdate, onDelete }: Props) {
                                 <td style={td}>{NAT_LABEL[row.data.nationality]}</td>
                                 <td style={td}>{row.data.age}</td>
                                 <td style={td}>{row.data.bankBranch}</td>
+                                <td style={td}>{row.data.province}</td>
+                                <td style={td}>{row.data.district}</td>
+                                <td style={td}>{row.data.openAddress}</td>
+                                <td style={td}>{row.data.phoneType}</td>
+                                <td style={td}>{countryLabel(row.data.countryCode)}</td>
+                                <td style={td}>{row.data.areaCode}</td>
+                                <td style={td}>{row.data.phoneNumber}</td>
                                 <td style={td}>
                                     {!isDeleted && (
                                         <>
@@ -137,7 +189,7 @@ export function CustomerGrid({ rows, onUpdate, onDelete }: Props) {
                     })}
                     {rows.length === 0 && (
                         <tr>
-                            <td colSpan={11} style={{ ...td, textAlign: "center", color: "#999" }}>No customers yet.</td>
+                            <td colSpan={17} style={{ ...td, textAlign: "center", color: "#999" }}>No customers yet.</td>
                         </tr>
                     )}
                 </tbody>

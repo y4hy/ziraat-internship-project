@@ -1,8 +1,12 @@
 import { useState } from "react";
 import type { CustomerData } from "../types/customer";
+import type { Country, Province } from "../types/lookup";
 import { BranchSearchModal } from "./BranchSearchModal";
 
 interface Props {
+    provinces: Province[];
+    phoneTypes: string[];
+    countryCodes: Country[];
     onAdd: (data: CustomerData) => void;
 }
 
@@ -15,6 +19,15 @@ const empty: CustomerData = {
     nationality: 1,
     age: 0,
     bankBranch: "",
+    addressId: null,
+    province: "",
+    district: "",
+    openAddress: "",
+    phoneId: null,
+    phoneType: "",
+    countryCode: "",
+    areaCode: "",
+    phoneNumber: "",
 };
 
 function isValidNationalId(number: string): boolean {
@@ -47,13 +60,25 @@ function validateForm(data: CustomerData): string | null {
 
     if (data.age < 0 || data.age > 150) return "Age must be between 0 and 150.";
     if (!data.bankBranch.trim()) return "Bank branch is required.";
+
+    if (!data.province) return "Province is required.";
+    if (!data.district) return "District is required.";
+    if (!data.openAddress.trim()) return "Open address is required.";
+
+    if (!data.phoneType) return "Phone type is required.";
+    if (!data.countryCode) return "Country code is required.";
+    if (!/^\d{3}$/.test(data.areaCode)) return "Area code must be 3 digits.";
+    if (!/^\d{7}$/.test(data.phoneNumber)) return "Phone number must be 7 digits.";
+
     return null;
 }
 
-export function CustomerInputPanel({ onAdd }: Props) {
+export function CustomerInputPanel({ provinces, phoneTypes, countryCodes, onAdd }: Props) {
     const [form, setForm] = useState<CustomerData>(empty);
     const [error, setError] = useState<string | null>(null);
     const [branchSearchOpen, setBranchSearchOpen] = useState(false);
+
+    const districts = provinces.find((p) => p.name === form.province)?.districts ?? [];
 
     function set<K extends keyof CustomerData>(key: K, value: CustomerData[K]) {
         setForm((prev) => ({ ...prev, [key]: value }));
@@ -122,6 +147,50 @@ export function CustomerInputPanel({ onAdd }: Props) {
                         />
                         <button type="button" onClick={() => setBranchSearchOpen(true)} aria-label="Search branch">🔍</button>
                     </span>
+                </label>
+                <label>
+                    Province (İl)
+                    <select value={form.province} onChange={(e) => setForm((prev) => ({ ...prev, province: e.target.value, district: "" }))} required>
+                        <option value="">Select…</option>
+                        {provinces.map((p) => (
+                            <option key={p.name} value={p.name}>{p.name}</option>
+                        ))}
+                    </select>
+                </label>
+                <label>
+                    District (İlçe)
+                    <select value={form.district} onChange={(e) => set("district", e.target.value)} disabled={!form.province} required>
+                        <option value="">Select…</option>
+                        {districts.map((d) => (
+                            <option key={d} value={d}>{d}</option>
+                        ))}
+                    </select>
+                </label>
+                <label>
+                    Open Address
+                    <input value={form.openAddress} maxLength={500} onChange={(e) => set("openAddress", e.target.value)} required />
+                </label>
+                <label>
+                    Phone Type
+                    <select value={form.phoneType} onChange={(e) => set("phoneType", e.target.value)} required>
+                        <option value="">Select…</option>
+                        {phoneTypes.map((t) => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                </label>
+                <label>
+                    Country Code
+                    <select value={form.countryCode} onChange={(e) => set("countryCode", e.target.value)} required>
+                        <option value="">Select…</option>
+                        {countryCodes.map((c) => <option key={c.code} value={c.code}>{c.code} – {c.name}</option>)}
+                    </select>
+                </label>
+                <label>
+                    Area Code
+                    <input inputMode="numeric" value={form.areaCode} onChange={(e) => set("areaCode", onlyDigits(e.target.value, 3))} placeholder="3 digits" required />
+                </label>
+                <label>
+                    Phone Number
+                    <input inputMode="numeric" value={form.phoneNumber} onChange={(e) => set("phoneNumber", onlyDigits(e.target.value, 7))} placeholder="7 digits" required />
                 </label>
             </div>
             {error && <p style={{ color: "red", marginTop: 8 }}>{error}</p>}

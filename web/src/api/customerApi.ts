@@ -3,6 +3,8 @@ import { BASE_URL, getList, postBatch } from "./batch";
 
 interface ApiCustomer {
     id: number;
+    addressId: number | null;
+    phoneId: number | null;
     firstName: string;
     lastName: string;
     nationalNumber: string;
@@ -11,6 +13,13 @@ interface ApiCustomer {
     nationality: 1 | 2;
     age: number;
     bankBranch: string;
+    province: string;
+    district: string;
+    openAddress: string;
+    phoneType: string;
+    countryCode: string;
+    areaCode: string;
+    phoneNumber: string;
     createdAt: string;
 }
 
@@ -27,6 +36,15 @@ function mapApiToRow(c: ApiCustomer): CustomerRow {
             nationality: c.nationality,
             age: c.age,
             bankBranch: c.bankBranch,
+            addressId: c.addressId,
+            province: c.province,
+            district: c.district,
+            openAddress: c.openAddress,
+            phoneId: c.phoneId,
+            phoneType: c.phoneType,
+            countryCode: c.countryCode,
+            areaCode: c.areaCode,
+            phoneNumber: c.phoneNumber,
         },
     };
 }

@@ -11,6 +11,15 @@ export interface CustomerData {
     nationality: 1 | 2;
     age: number;
     bankBranch: string;
+    addressId: number | null;
+    province: string;
+    district: string;
+    openAddress: string;
+    phoneId: number | null;
+    phoneType: string;
+    countryCode: string;
+    areaCode: string;
+    phoneNumber: string;
 }
 
 export type CustomerRow = Row<CustomerData>;
