@@ -1,14 +1,20 @@
 import { useEffect, useState } from "react";
 import { clearToken, getToken, subscribe } from "./api/authStore";
 import { LoginScreen } from "./components/LoginScreen";
-import { Menu, type FormKey } from "./components/Menu";
+import { Sidebar, type ScreenKey } from "./components/Sidebar";
 import { CustomerOperationsForm } from "./components/CustomerOperationsForm";
 import { AccountOperationsForm } from "./components/AccountOperationsForm";
 import "./App.css";
 
+const PAGE_TITLES: Record<ScreenKey, string> = {
+    customer: "Customer Operations",
+    "account-transactions": "Customer Account Transactions",
+    "account-report": "Customer Account Report",
+};
+
 function App() {
     const [token, setTokenState] = useState<string | null>(getToken());
-    const [activeForm, setActiveForm] = useState<FormKey>("customer");
+    const [active, setActive] = useState<ScreenKey>("customer");
 
     // Keep React in sync with the token store (login, logout, and 401-triggered logout).
     useEffect(() => subscribe(() => setTokenState(getToken())), []);
@@ -18,15 +24,17 @@ function App() {
     }
 
     return (
-        <div style={{ width: "100%", padding: "24px 32px", boxSizing: "border-box", fontFamily: "sans-serif" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 16 }}>
-                <Menu active={activeForm} onSelect={setActiveForm} onLogout={clearToken} />
-                <h1 style={{ margin: 0, fontSize: 22 }}>
-                    {activeForm === "customer" ? "Customer Operations" : "Account Operations"}
-                </h1>
-            </div>
+        <div style={{ display: "flex", minHeight: "100vh", fontFamily: "sans-serif" }}>
+            <Sidebar active={active} onSelect={setActive} onLogout={clearToken} />
+            <div style={{ flex: 1, minWidth: 0, padding: "24px 32px", boxSizing: "border-box" }}>
+                <h1 style={{ margin: "0 0 16px", fontSize: 22 }}>{PAGE_TITLES[active]}</h1>
 
-            {activeForm === "customer" ? <CustomerOperationsForm /> : <AccountOperationsForm />}
+                {active === "customer" ? (
+                    <CustomerOperationsForm />
+                ) : (
+                    <AccountOperationsForm activeTab={active === "account-report" ? "report" : "transactions"} />
+                )}
+            </div>
         </div>
     );
 }
